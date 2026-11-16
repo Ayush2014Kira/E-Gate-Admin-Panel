@@ -1,0 +1,11 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// Served under /eGate-admin/ so it can sit next to the VMS app (/eGate/) on the same domain.
+export default defineConfig(({ command }) => ({
+  plugins: [react()],
+  base: '/eGate-admin/',
+  server: { port: 5174 },
+  // Production builds drop console.log / debug calls (console.warn / error stay)
+  esbuild: command === 'build' ? { pure: ['console.log', 'console.debug', 'console.info'], drop: ['debugger'] } : {},
+}))

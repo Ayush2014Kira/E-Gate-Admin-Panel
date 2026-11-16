@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 222 64" width="222" height="64" role="img" aria-label="E-Gate">
+  <title>E-Gate</title>
+  <path d="M32 3 L57 17.5 V46.5 L32 61 L7 46.5 V17.5 Z" fill="#003557" stroke="#003557" stroke-width="4" stroke-linejoin="round"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="7">
+    <path d="M23 32 H37" stroke="#3ba1e1"/>
+    <path d="M41 20 H23 V44 H41" stroke="#ffffff"/>
+  </g>
+  <g transform="translate(76 0)" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="6">
+    <path d="M18 18 H3 V46 H18 M3 32 H15" stroke="#003557"/>
+    <path d="M27 35 H35" stroke="#3ba1e1"/>
+    <path d="M67.9 22.1 A14 14 0 1 0 70 32 H60" stroke="#003557"/>
+    <circle cx="87" cy="37" r="9" stroke="#003557"/>
+    <path d="M96 28 V46" stroke="#003557"/>
+    <path d="M107 20 V46 M102 28 H113" stroke="#003557"/>
+    <path d="M119 37 H137 A9 9 0 1 0 134.4 43.4" stroke="#003557"/>
+  </g>
+</svg>
