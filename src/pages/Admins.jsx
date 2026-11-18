@@ -176,7 +176,7 @@ const Admins = () => {
         okButtonProps={{ loading: saving }}
         onCancel={() => setAdding(false)}
         onOk={() => form.submit()}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical" onFinish={create} requiredMark={false}>
           <Form.Item name="name" label="Name" rules={[{ required: true, whitespace: true, message: "Enter a name" }]}>
@@ -203,7 +203,7 @@ const Admins = () => {
         okButtonProps={{ loading: saving }}
         onCancel={() => setEditing(null)}
         onOk={() => editForm.submit()}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           key={editing?._id}

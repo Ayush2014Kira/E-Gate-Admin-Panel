@@ -166,7 +166,7 @@ const Plans = () => {
         onOk={() => form.submit()}
         onCancel={() => setEditing(null)}
         width={680}
-        destroyOnClose
+        destroyOnHidden
       >
         {editing?._id && editing.companies > 0 && (
           <Alert

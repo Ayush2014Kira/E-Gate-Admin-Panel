@@ -148,7 +148,7 @@ export const StatusActions = ({ company, onChanged, size }) => {
         okButtonProps={{ danger: true, loading: !!busy }}
         onCancel={() => setReasonFor(null)}
         onOk={() => form.submit()}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical" onFinish={({ reason }) => run(reasonFor, reason.trim())}>
           {/* Help text above the box: below it, it overlapped the 0/500 character counter */}

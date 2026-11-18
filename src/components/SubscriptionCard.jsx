@@ -263,7 +263,7 @@ const SubscriptionCard = ({ company }) => {
         okButtonProps={{ danger: true, loading: busy }}
         onOk={cancel}
         onCancel={() => setCancelling(false)}
-        destroyOnClose
+        destroyOnHidden
       >
         <p>The plan ends today with no grace days. The company can only view its data until a new plan starts.</p>
         <Input.TextArea rows={2} maxLength={300} placeholder="Reason (only the E-Gate team sees it)" value={reason} onChange={(e) => setReason(e.target.value)} />

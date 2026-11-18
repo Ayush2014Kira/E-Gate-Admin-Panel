@@ -618,7 +618,7 @@ const LandingContent = () => {
       </div>
 
       {!wide && (
-        <Drawer title={null} placement="right" styles={{ body: { paddingTop: 44 } }} width="min(560px, 100vw)" open={previewOpen} onClose={() => setPreviewOpen(false)} destroyOnClose>
+        <Drawer title={null} placement="right" styles={{ body: { paddingTop: 44 } }} width="min(560px, 100vw)" open={previewOpen} onClose={() => setPreviewOpen(false)} destroyOnHidden>
           <div className="le-drawer-preview">{preview}</div>
         </Drawer>
       )}

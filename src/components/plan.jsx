@@ -173,7 +173,7 @@ export const PlanModal = ({ open, mode = "assign", company, current, usage, onCl
       okButtonProps={{ loading: saving }}
       onOk={() => form.submit()}
       onCancel={onClose}
-      destroyOnClose
+      destroyOnHidden
       width={520}
     >
       {approve && <p className="muted" style={{ marginTop: 0 }}>The company starts on this plan as soon as it is approved.</p>}
