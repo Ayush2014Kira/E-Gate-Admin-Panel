@@ -55,7 +55,12 @@ const PAYMENT_MODES = ["Bank transfer", "UPI", "Cheque", "Cash", "Free"].map((m)
 // Assign a plan / change it / extend the current one. mode: "assign" | "extend".
 // approve: used while approving a company (returns the choice instead of saving it).
 // usage: the company's counts, to warn when a smaller plan is picked
-export const PlanModal = ({ open, mode = "assign", company, current, usage, onClose, onSaved, approve }) => {
+// request: a plan request sent from the company's dashboard; the form starts with what they asked for
+const monthsText = (n) => (n === 12 ? "1 year" : `${n} month${n === 1 ? "" : "s"}`);
+// "Renew Pro for 1 year" / "Change to Enterprise for 6 months"
+export const planRequestText = (r) => `${r.type === "renew" ? "Renew" : "Change to"} ${r.planName} for ${monthsText(r.months)}`;
+
+export const PlanModal = ({ open, mode = "assign", company, current, usage, onClose, onSaved, approve, request }) => {
   const { message, modal } = App.useApp();
   const [form] = Form.useForm();
   const [plans, setPlans] = useState([]);
@@ -89,6 +94,18 @@ export const PlanModal = ({ open, mode = "assign", company, current, usage, onCl
           : list.find((p) => p.key === current?.planKey);
         setAskedAvailable(!!asked);
         const duration = asked && company.requestedPlan.billing === "monthly" ? 1 : 12;
+        if (request) {
+          // "After the current plan ends": the day after it, while it is still running
+          const after = request.startWhen === "afterCurrent" && current?.endsAt && dayjs(current.endsAt).isAfter(dayjs());
+          const wanted = list.find((p) => p.isActive && p._id === request.planId);
+          form.setFieldsValue({
+            planId: wanted?._id || start?._id,
+            duration: request.months,
+            startDate: after ? dayjs(current.endsAt).add(1, "day").startOf("day") : dayjs(),
+            payment: {},
+          });
+          return;
+        }
         form.setFieldsValue({ planId: start?._id, duration, startDate: dayjs(), payment: {} });
       })
       .catch((err) => setError(errorMessage(err)));
@@ -140,13 +157,14 @@ export const PlanModal = ({ open, mode = "assign", company, current, usage, onCl
       startDate: !extend && values.startDate ? values.startDate.format("YYYY-MM-DD") : undefined,
       payment: values.payment,
       note: values.note,
+      requestId: request?._id,
     };
     if (approve) return approve(isTrial ? undefined : body);
     setSaving(true);
     setError(null);
     try {
       await api.setSubscription(company._id, body);
-      message.success(extend ? "Plan extended" : "Plan saved");
+      message.success(request ? "Request approved and plan saved" : extend ? "Plan extended" : "Plan saved");
       refreshCounts();
       onSaved?.();
       onClose();
@@ -159,6 +177,8 @@ export const PlanModal = ({ open, mode = "assign", company, current, usage, onCl
 
   const title = approve
     ? `Approve ${company.companyName}`
+    : request
+      ? `Approve plan request from ${company.companyName}`
     : extend
       ? `Extend ${current?.planName} for ${company.companyName}`
       : current?.planKey
@@ -169,7 +189,7 @@ export const PlanModal = ({ open, mode = "assign", company, current, usage, onCl
     <Modal
       open={open}
       title={title}
-      okText={approve ? "Approve" : extend ? "Extend" : "Save plan"}
+      okText={approve || request ? "Approve" : extend ? "Extend" : "Save plan"}
       okButtonProps={{ loading: saving }}
       onOk={() => form.submit()}
       onCancel={onClose}
@@ -189,6 +209,21 @@ export const PlanModal = ({ open, mode = "assign", company, current, usage, onCl
               : company.requestedPlan.contactSales
                 ? "They asked to be contacted for custom pricing. Agree the price first, then pick the plan."
                 : "Selected below. Change it if you agreed something else with them."
+          }
+        />
+      )}
+      {request && (
+        <Alert
+          type="info"
+          showIcon
+          style={{ marginBottom: 16 }}
+          message={`They asked: ${planRequestText(request)}`}
+          description={
+            <>
+              {request.startWhen === "afterCurrent" ? "To start after the current plan ends." : "To start as soon as it is approved."}
+              {request.note && <div>Note: {request.note}</div>}
+              <div className="muted">Filled in below. Change it if you agreed something else with them. The company admin gets an email.</div>
+            </>
           }
         />
       )}

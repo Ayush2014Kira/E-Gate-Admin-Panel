@@ -80,6 +80,9 @@ const api = {
   // body: { action: "assign" | "extend" | "cancel", planId, months | endDate, startDate, payment, note, graceDays }
   setSubscription: (id, body) => http.post(`/companies/${id}/subscription`, body).then(data),
 
+  // Plan requests sent from company dashboards; approved through setSubscription with requestId
+  planRequests: (params) => http.get("/planRequests", { params }).then(data),
+  declinePlanRequest: (id, reply) => http.post(`/planRequests/${id}/decline`, { reply }).then(data),
   plans: () => http.get("/plans").then(data),
   savePlan: (plan) => http.post("/plans", plan).then(data),
   // Refused (409) while a company is on the plan

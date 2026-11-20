@@ -4,6 +4,7 @@ import { Avatar, Button, Dropdown, Grid, Layout, Menu, Tooltip } from "antd";
 import {
   AppstoreOutlined,
   CrownOutlined,
+  InboxOutlined,
   BankOutlined,
   GlobalOutlined,
   LockOutlined,
@@ -26,9 +27,16 @@ const AppLayout = () => {
   const isMobile = screens.md === false;
   const [collapsed, setCollapsed] = useState(true);
   const [pending, setPending] = useState(0);
+  const [planRequests, setPlanRequests] = useState(0);
 
   const loadPending = useCallback(() => {
-    api.stats().then((s) => setPending(s.companies.pending)).catch(() => {});
+    api
+      .stats()
+      .then((s) => {
+        setPending(s.companies.pending);
+        setPlanRequests(s.planRequests?.pending || 0);
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -50,6 +58,16 @@ const AppLayout = () => {
       ),
     },
     { key: "/plans", icon: <CrownOutlined />, label: "Plans" },
+    {
+      key: "/plan-requests",
+      icon: <InboxOutlined />,
+      label: (
+        <>
+          Plan requests
+          {planRequests > 0 && <span className="sider-badge">{planRequests}</span>}
+        </>
+      ),
+    },
     { key: "/landing", icon: <GlobalOutlined />, label: "Landing page" },
     { key: "/admins", icon: <TeamOutlined />, label: "Admin users" },
   ];

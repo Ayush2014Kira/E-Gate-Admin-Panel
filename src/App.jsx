@@ -9,6 +9,7 @@ import CompanyDetail from "./pages/CompanyDetail";
 import Admins from "./pages/Admins";
 import Account from "./pages/Account";
 import Plans from "./pages/Plans";
+import PlanRequests from "./pages/PlanRequests";
 import LandingContent from "./pages/LandingContent";
 
 const App = () => {
@@ -38,6 +39,7 @@ const App = () => {
         <Route path="/companies" element={<Companies />} />
         <Route path="/companies/:id" element={<CompanyDetail />} />
         <Route path="/plans" element={<Plans />} />
+        <Route path="/plan-requests" element={<PlanRequests />} />
         <Route path="/landing" element={<LandingContent />} />
         <Route path="/admins" element={<Admins />} />
         <Route path="/account" element={<Account />} />

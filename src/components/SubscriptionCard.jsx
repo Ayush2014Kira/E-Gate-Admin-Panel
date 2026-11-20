@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Alert, App, Button, Card, Empty, Input, Modal, Progress, Skeleton, Space, Table, Tag } from "antd";
 import { CalendarOutlined, DeleteOutlined, StopOutlined, SwapOutlined } from "@ant-design/icons";
 import api, { errorMessage, refreshCounts } from "../api";
-import { EndsIn, PlanModal, PlanStateTag, formatDay, limitText, rupees } from "./plan";
+import { EndsIn, PlanModal, PlanStateTag, formatDay, limitText, planRequestText, rupees } from "./plan";
 
 const ACTION_LABEL = {
   trial: "Free trial",
@@ -21,14 +22,24 @@ const SubscriptionCard = ({ company }) => {
   const { message, modal: confirm } = App.useApp();
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
-  const [modal, setModal] = useState(null); // "assign" | "extend"
+  const [modal, setModal] = useState(null); // "assign" | "extend" | "request"
+  // A plan request sent from the company's dashboard, waiting for the E-Gate team
+  const [request, setRequest] = useState(null);
+  const [declining, setDeclining] = useState(false);
+  const [reply, setReply] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
   const [cancelling, setCancelling] = useState(false);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      setData(await api.subscription(company._id));
+      const [sub, requests] = await Promise.all([
+        api.subscription(company._id),
+        api.planRequests({ companyId: company._id, status: "pending" }).catch(() => []),
+      ]);
+      setData(sub);
+      setRequest(requests[0] || null);
       setError(null);
     } catch (err) {
       setError(errorMessage(err));
@@ -38,6 +49,31 @@ const SubscriptionCard = ({ company }) => {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Opened from the request email or the Plan requests page (?request=<id>): the approve form opens itself
+  const linked = searchParams.get("request");
+  useEffect(() => {
+    if (!linked || !data || !request) return;
+    if (request._id === linked && company.approvalStatus === "approved") setModal("request");
+    searchParams.delete("request");
+    setSearchParams(searchParams, { replace: true });
+  }, [linked, data, request]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const decline = async () => {
+    setBusy(true);
+    try {
+      await api.declinePlanRequest(request._id, reply.trim());
+      message.success("Request declined. The company admin gets an email.");
+      setDeclining(false);
+      setReply("");
+      refreshCounts();
+      load();
+    } catch (err) {
+      message.error(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const cancel = async () => {
     setBusy(true);
@@ -178,6 +214,34 @@ const SubscriptionCard = ({ company }) => {
       }
       style={{ marginBottom: 16 }}
     >
+      {request && (
+        <Alert
+          type="info"
+          showIcon
+          className="sub-request"
+          style={{ marginBottom: 16 }}
+          message={`Plan request: ${planRequestText(request)}`}
+          description={
+            <>
+              Sent on {formatDay(request.createdAt)} by {request.requestedByName || "the company admin"}
+              {request.requestedByEmail && ` (${request.requestedByEmail})`}.{" "}
+              {request.startWhen === "afterCurrent" ? "To start after the current plan ends." : "To start as soon as it is approved."}
+              {request.note && <div>Note: “{request.note}”</div>}
+              {/* Under the text, so it never squeezes the sentence on a narrow screen */}
+              {approved && (
+                <Space size={8} style={{ marginTop: 10 }}>
+                  <Button size="small" type="primary" onClick={() => setModal("request")}>
+                    Approve…
+                  </Button>
+                  <Button size="small" danger onClick={() => setDeclining(true)}>
+                    Decline
+                  </Button>
+                </Space>
+              )}
+            </>
+          }
+        />
+      )}
       {!hasPlan ? (
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -214,7 +278,12 @@ const SubscriptionCard = ({ company }) => {
               return (
                 <div key={key} className="sub-usage-item">
                   <div className="sub-usage-top">
-                    <span>{label}</span>
+                    <span>
+                      {label}
+                      {key === "visitorsPerMonth" && plan.visitorMonthFrom && (
+                        <span className="muted"> · since {formatDay(plan.visitorMonthFrom)}</span>
+                      )}
+                    </span>
                     <b>
                       {used.toLocaleString("en-IN")} <span className="muted">/ {limitText(max)}</span>
                     </b>
@@ -248,13 +317,34 @@ const SubscriptionCard = ({ company }) => {
 
       <PlanModal
         open={!!modal}
-        mode={modal || "assign"}
+        mode={modal === "extend" ? "extend" : "assign"}
         company={company}
         current={plan}
         usage={usage}
+        request={modal === "request" ? request : null}
         onClose={() => setModal(null)}
         onSaved={load}
       />
+      <Modal
+        open={declining}
+        title="Decline this plan request?"
+        okText="Decline"
+        okButtonProps={{ danger: true, loading: busy }}
+        onOk={decline}
+        onCancel={() => setDeclining(false)}
+        destroyOnHidden
+      >
+        <p>{request && planRequestText(request)}. The company admin gets an email with your message.</p>
+        <Input.TextArea
+          rows={3}
+          maxLength={300}
+          showCount
+          placeholder="Message for the company (optional), e.g. please call us to agree the price"
+          value={reply}
+          onChange={(e) => setReply(e.target.value)}
+          style={{ marginBottom: 20 }}
+        />
+      </Modal>
       <Modal
         open={cancelling}
         title={`Cancel the plan of ${company.companyName}?`}
