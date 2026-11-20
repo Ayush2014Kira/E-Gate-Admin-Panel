@@ -217,7 +217,8 @@ const TextField = ({ field, value, onChange }) => {
   return (
     <div className={`le-field ${field.area || field.wide ? "is-wide" : ""}`}>
       <FieldHead label={field.label} hint={field.hint} count={(value || "").length} max={field.max} />
-      <Comp value={value} maxLength={field.max} autoSize={field.area ? { minRows: 2, maxRows: 8 } : undefined} onChange={(e) => onChange(e.target.value)} />
+      {/* autoSize only exists on TextArea: a plain Input passed it on to the DOM (React warning) */}
+      <Comp value={value} maxLength={field.max} {...(field.area ? { autoSize: { minRows: 2, maxRows: 8 } } : {})} onChange={(e) => onChange(e.target.value)} />
     </div>
   );
 };

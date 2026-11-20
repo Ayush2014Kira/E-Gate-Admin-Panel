@@ -228,8 +228,10 @@ const SubscriptionCard = ({ company }) => {
               {request.startWhen === "afterCurrent" ? "To start after the current plan ends." : "To start as soon as it is approved."}
               {request.note && <div>Note: “{request.note}”</div>}
               {/* Under the text, so it never squeezes the sentence on a narrow screen */}
+              {/* A block of its own: Space is inline, so on its own it sits on the text's last line */}
               {approved && (
-                <Space size={8} style={{ marginTop: 10 }}>
+                <div style={{ marginTop: 10 }}>
+                <Space size={8}>
                   <Button size="small" type="primary" onClick={() => setModal("request")}>
                     Approve…
                   </Button>
@@ -237,6 +239,7 @@ const SubscriptionCard = ({ company }) => {
                     Decline
                   </Button>
                 </Space>
+                </div>
               )}
             </>
           }

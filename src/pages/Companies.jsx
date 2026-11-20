@@ -116,7 +116,8 @@ const Companies = () => {
             </div>
             {c.plan?.endsAt && (
               <div className="muted">
-                {c.plan.daysLeft < 0 ? "Ended " : "Ends "}
+                {/* A cancelled plan ends "now" (0 days left): it has ended, not "ends today" */}
+                {c.plan.daysLeft < 0 || c.plan.state === "expired" || c.plan.state === "grace" ? "Ended " : "Ends "}
                 <EndsIn plan={c.plan} />
               </div>
             )}

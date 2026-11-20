@@ -28,7 +28,8 @@ export const EndsIn = ({ plan }) => {
   if (!plan?.endsAt) return <span className="muted">—</span>;
   const d = plan.daysLeft;
   const text = d > 1 ? `in ${d} days` : d === 1 ? "tomorrow" : d === 0 ? "today" : `${-d} day${d === -1 ? "" : "s"} ago`;
-  const color = d < 0 ? "#b91c1c" : d <= 7 ? "#b45309" : undefined;
+  const ended = d < 0 || plan.state === "expired" || plan.state === "grace";
+  const color = ended ? "#b91c1c" : d <= 7 ? "#b45309" : undefined;
   return (
     <span title={formatDay(plan.endsAt)} style={{ color, fontWeight: color ? 600 : undefined }}>
       {text}

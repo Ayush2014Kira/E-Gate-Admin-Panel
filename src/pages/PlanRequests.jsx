@@ -88,9 +88,12 @@ const PlanRequests = () => {
     },
     { title: "Sent", dataIndex: "createdAt", render: formatDay, width: 120 },
     {
+      // Status and, for a waiting request, its buttons: one column pinned on the right on every tab,
+      // so the outcome (or Approve / Decline) is always in view without scrolling sideways
       key: "status",
       title: "Status",
-      width: 170,
+      width: 180,
+      fixed: "right",
       render: (_, r) => (
         <>
           <Tag bordered={false} color={STATUS[r.status]?.color}>
@@ -103,25 +106,18 @@ const PlanRequests = () => {
             </div>
           )}
           {r.reply && <div className="muted">“{r.reply}”</div>}
+          {r.status === "pending" && r.company && (
+            <Space size={6} wrap style={{ marginTop: 8 }}>
+              <Button size="small" type="primary" onClick={() => navigate(`/companies/${r.companyId}?request=${r._id}`)}>
+                Approve…
+              </Button>
+              <Button size="small" danger onClick={() => setDeclining(r)}>
+                Decline
+              </Button>
+            </Space>
+          )}
         </>
       ),
-    },
-    {
-      key: "actions",
-      title: "",
-      width: 110,
-      fixed: "right",
-      render: (_, r) =>
-        r.status === "pending" && r.company ? (
-          <Space direction="vertical" size={6}>
-            <Button size="small" type="primary" onClick={() => navigate(`/companies/${r.companyId}?request=${r._id}`)}>
-              Approve…
-            </Button>
-            <Button size="small" danger onClick={() => setDeclining(r)}>
-              Decline
-            </Button>
-          </Space>
-        ) : null,
     },
   ];
 
@@ -149,15 +145,9 @@ const PlanRequests = () => {
         <Table
           rowKey="_id"
           loading={rows === null}
-          // Approve / Decline only exist for waiting requests: other tabs drop the (pinned) empty column
-          // (and pin Status instead, so the outcome and reply stay in view on a narrow screen)
-          columns={
-            status === "pending" || status === "all"
-              ? columns
-              : columns.filter((c) => c.key !== "actions").map((c) => (c.key === "status" ? { ...c, fixed: "right" } : c))
-          }
+          columns={columns}
           dataSource={rows || []}
-          scroll={{ x: status === "pending" || status === "all" ? 1050 : 940 }}
+          scroll={{ x: 950 }}
           locale={{ emptyText: status === "pending" ? "No requests waiting" : "No requests" }}
           pagination={(rows?.length || 0) > 20 ? { pageSize: 20 } : false}
         />
