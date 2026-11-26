@@ -144,6 +144,8 @@ const Companies = () => {
       title: "",
       align: "right",
       responsive: ["md"],
+      // Stays in view on narrower screens instead of being pushed past the right edge
+      fixed: "right",
       render: (_, c) => <StatusActions company={c} size="small" onChanged={load} />,
     },
   ];

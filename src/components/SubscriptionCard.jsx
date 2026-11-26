@@ -14,6 +14,8 @@ const ACTION_LABEL = {
   legacy: "Given at launch",
 };
 const STATUS_LABEL = { trial: "Trial", active: "Active", replaced: "Replaced", cancelled: "Cancelled", removed: "Removed" };
+// A trial / active period whose end date has passed is over, whatever its stored status says
+const periodStatus = (s) => (["trial", "active"].includes(s.status) && s.endAt && new Date(s.endAt) < new Date() ? "ended" : s.status);
 
 const usageColor = (pct) => (pct >= 100 ? "#dc2626" : pct >= 80 ? "#f59e0b" : "#3ba1e1");
 
@@ -171,8 +173,8 @@ const SubscriptionCard = ({ company }) => {
       align: "right",
       render: (_, s) => (
         <Space size={4}>
-          <Tag bordered={false} color={s.status === "cancelled" || s.status === "removed" ? "red" : s.status === "replaced" ? "default" : "blue"}>
-            {STATUS_LABEL[s.status]}
+          <Tag bordered={false} color={s.status === "cancelled" || s.status === "removed" ? "red" : ["replaced", "ended"].includes(periodStatus(s)) ? "default" : "blue"}>
+            {periodStatus(s) === "ended" ? "Ended" : STATUS_LABEL[s.status]}
           </Tag>
           {s.canRemove && approved && (
             <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => removeExtension(s)} aria-label="Remove this extension">
